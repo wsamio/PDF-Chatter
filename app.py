@@ -2,6 +2,11 @@ import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -21,9 +26,28 @@ def get_text_chunks(text):
     chunks = text_splitter.split_text(text)
     return chunks
 
+def get_vectorstore(text_chunks):
+    embeddings = OpenAIEmbeddings()
+    vectorstore = FAISS.from_texts(texts = text_chunks, embedding = embeddings)
+    return vectorstore
+
+def get_conversation_chain(vectorstore):
+    llm = ChatOpenAI()
+    memory = ConversationBufferMemory(memory_key = 'chat_history', return_message = True)
+    conversation_chain = ConversationalRetrievalChain.from_llm(
+        llm = llm,
+        retriever = vectorstore.as_retriever(),
+        memory = memory
+    )
+    return conversation_chain
+
+
 def main():
     load_dotenv()
-    st.set_page_config(page_title="PDF Chatter")
+    st.set_page_config(page_title="PDF Chatter :robot_face:")
+
+    if "conversation" not in st.session_state:
+        st.session_state.conversation = None
 
     st.header("PDF Chatter")
     st.text_input("Ask questions about the ingested pdf")
@@ -41,7 +65,10 @@ def main():
                 text_chunks = get_text_chunks(raw_text)
 
                 # create vector store
+                vectorstore = get_vectorstore(text_chunks)
 
+                # create conversation chain
+                st.session_state.conversation = get_conversation_chain(vectorstore)
 
 if __name__ == '__main__':
     main()
