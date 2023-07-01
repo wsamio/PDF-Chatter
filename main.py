@@ -1,5 +1,5 @@
 import streamlit as st
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings
@@ -8,6 +8,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
+import os
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -20,10 +21,10 @@ def get_pdf_text(pdf_docs):
 
 def get_text_chunks(text):
     text_splitter = CharacterTextSplitter(
-        separator="\n",
-        chunk_size=1000,
-        chunk_overlap=200,
-        length_function=len
+        separator = "\n",
+        chunk_size = 1000,
+        chunk_overlap = 200,
+        length_function = len
     )
     chunks = text_splitter.split_text(text)
     return chunks
@@ -31,7 +32,6 @@ def get_text_chunks(text):
 
 def get_vectorstore(text_chunks):
     embeddings = OpenAIEmbeddings()
-    # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
@@ -51,16 +51,20 @@ def handle_userinput(user_question):
 
     history =  st.session_state.chat_history[::-1]
     for message in history:
-        st.write(user_template.replace("{{MSG}}", message[0]), unsafe_allow_html=True)
-        st.write(bot_template.replace("{{MSG}}", message[1]), unsafe_allow_html=True)
+        st.write(user_template.replace("{{MSG}}", message[0]), unsafe_allow_html = True)
+        st.write(bot_template.replace("{{MSG}}", message[1]), unsafe_allow_html = True)
 
 
 
 def main():
-    load_dotenv()
     st.set_page_config(page_title="PDF Chatter")
 
-    st.write(css, unsafe_allow_html =  True)
+    #taking the api key and updating the env file
+    key = st.text_input("Please enter your OpenAI API key to continue", type = "password")
+    os.environ['OPENAI_API_KEY'] = key
+    load_dotenv()
+
+    st.write(css, unsafe_allow_html = True)
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
