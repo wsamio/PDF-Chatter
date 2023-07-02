@@ -3,23 +3,22 @@
 # PDF Chatter
 
 ## Overview
-------------
 Introducing PDF Chatter: Transforming PDFs into Engaging Dialogues.
 
 PDF Conversations revolutionizes the way you interact with PDF documents. By leveraging advanced natural language processing techniques, it converts your PDFs into dynamic conversations. Simply upload your file and engage in dialogue to obtain precise answers, detailed explanations, and helpful summaries. Experience a whole new level of engagement and knowledge retrieval.
 
 ## Requirements and Installation
-------------
 1. Clone the repository to your local machine.
 2. Install the necessary dependencies by executing the following command:
+
    ```
    pip install -r requirements.txt
    ```
 
 ## Getting Started
-------------
 Follow these steps to use PDF Conversations:
 1. Run the `main.py` file using the Streamlit CLI. Use the following command:
+
    ```
    streamlit run main.py
    ```
